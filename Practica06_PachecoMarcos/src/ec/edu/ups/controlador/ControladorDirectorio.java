@@ -25,7 +25,8 @@ public class ControladorDirectorio {
     
     
     //Controlador Directorio
-    public ControladorDirectorio() {
+    public ControladorDirectorio(String ruta) {
+        this.ruta = ruta;
     }
     
      
