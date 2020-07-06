@@ -160,5 +160,15 @@ public class ControladorDirectorio {
     }
     
     
+    //metodo para ver si existe
+    public boolean comprobarExistencia(String ruta, String nombre) {
+        archivo = new File(ruta + File.separator + nombre);
+        if (archivo.exists()) {
+            return true;
+        } else {
+            return false;
+        }
+
+    }
 
 }

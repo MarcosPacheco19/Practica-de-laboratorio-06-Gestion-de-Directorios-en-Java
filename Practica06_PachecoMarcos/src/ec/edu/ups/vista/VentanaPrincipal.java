@@ -251,10 +251,22 @@ public class VentanaPrincipal extends javax.swing.JFrame {
             if (ruta == null) {
                 JOptionPane.showMessageDialog(this, "Obligatorio llenar el campo de ruta");
             } else {
-                controladorDirectorio.crearDirectorio(ruta, nuevo);   
-                JOptionPane.showMessageDialog(this, "Directorio creado correctamente");
+                if (controladorDirectorio.comprobarExistencia(ruta, nuevo)) {
+                    int opcion = JOptionPane.showConfirmDialog(this, "La carpeta ya existe, ¿desea reemplazarla?");
+                    if (opcion == JOptionPane.YES_OPTION) {
+                        controladorDirectorio.crearDirectorio(ruta, nuevo);
+                        JOptionPane.showMessageDialog(this, "Directorio creado correctamente");
+                        List<String> directorio = controladorDirectorio.listarArchivos(ruta);
+                        llenarLista(directorio);
+                    }
+
+                } else {
+                    controladorDirectorio.crearDirectorio(ruta, nuevo);   
+                    JOptionPane.showMessageDialog(this, "Directorio creado correctamente");
+                    
+                }
+            }
         }
-      }
     }//GEN-LAST:event_menuItemCrearActionPerformed
 
     
@@ -426,6 +438,16 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         DefaultListModel model = new DefaultListModel();
         model.clear();
         ListDirectorio.setModel(model);
+    }
+    
+    public void llenarLista(List<String> directorio) {
+        DefaultListModel modelo = new DefaultListModel();
+        modelo.clear();
+
+        for (String nombre : directorio) {
+            modelo.addElement(nombre);
+        }
+        ListDirectorio.setModel(modelo);
     }
     /**
      * @param args the command line arguments
