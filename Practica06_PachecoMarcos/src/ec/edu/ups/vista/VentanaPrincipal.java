@@ -6,7 +6,7 @@
 package ec.edu.ups.vista;
 
 import ec.edu.ups.controlador.ControladorDirectorio;
-import java.io.File;
+import java.awt.Point;
 import java.io.IOException;
 import java.util.List;
 import java.util.logging.Level;
@@ -30,18 +30,12 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         initComponents();
         
         
-        controladorDirectorio = new ControladorDirectorio(txtRuta.getText());
+        controladorDirectorio = new ControladorDirectorio();
+        this.setTitle("Gestión de Directorios");
+        this.setLocation(new Point(300, 100));
     }
 
-    
-     private void mostrarLista(List<String> rutaL) {
-        DefaultListModel modelo = new DefaultListModel();
-        modelo.clear();
-        for (String directorios : rutaL) {
-            modelo.addElement(directorios);
-        }
-        ListDirectorio.setModel(modelo);
-    }
+   
      
      
     /**
@@ -273,40 +267,44 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     
     private void menuItemEliminarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemEliminarActionPerformed
         
-        String eliminarDirectorio = "";
-        eliminarDirectorio = JOptionPane.showInputDialog("Ingrese nombre de archivo a eliminar");
-        if (eliminarDirectorio == null) {
-            JOptionPane.showMessageDialog(this, "No se ha eliminado ningun archivo");
-        } else {
-            String rutaEliminara = txtRuta.getText() + File.separator + eliminarDirectorio;
-            if (comprobar(rutaEliminara)) {
-                controladorDirectorio.eliminarDirectorio(eliminarDirectorio, txtRuta.getText());
-                int confirmacion = JOptionPane.showConfirmDialog(this, "Seguro de eliminar este archivo");
-                if (confirmacion == JOptionPane.YES_OPTION) {
-                    JOptionPane.showMessageDialog(this, "Archivo eliminado exitosamente");
-                    limpiarLista();
-                    List<String> lista = controladorDirectorio.listarDirectorios(txtRuta.getText());
-                    mostrarLista(lista);
-                }
-            } else {
-                JOptionPane.showMessageDialog(this, "Este archivo no existe intente otra vez");
+       int opcion = JOptionPane.showConfirmDialog(this, "¿Desea eliminar este directorio?");
+        if (opcion == JOptionPane.YES_OPTION) {
+            try {
+                String eliminar = ListDirectorio.getSelectedValue();
+                String ruta = txtRuta.getText();
+                controladorDirectorio.eliminarDirectorio(ruta, eliminar);
+                List<String> directorio = controladorDirectorio.listarArchivos(ruta);
+                llenarLista(directorio);
+                JOptionPane.showMessageDialog(this, "Directorio eliminado correctamente");
+            } catch (IOException ex) {
+                Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
             }
-
         }
-
+        List<String> directorio = controladorDirectorio.listarArchivos(txtRuta.getText());
+        llenarLista(directorio);
     }//GEN-LAST:event_menuItemEliminarActionPerformed
 
     
     
     private void menuItemRenombrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemRenombrarActionPerformed
         
-         String actual = ListDirectorio.getSelectedValue();
-        //System.out.println(actual );
-        String nuevo = JOptionPane.showInputDialog("Ingrese nuevo nombre del archivo: " + actual);
-        controladorDirectorio.renombrar(actual, nuevo);
-        limpiarLista();
-        List<String> lista = controladorDirectorio.listarDirectorios(txtRuta.getText());
-        mostrarLista(lista);
+        String renombre = null;
+
+        renombre = JOptionPane.showInputDialog("Escriba el nombre del nuevo directorio");
+        if (renombre == null) {
+            JOptionPane.showMessageDialog(this, "Agregue un nombre al directorio");
+        } else {
+            String ruta = txtRuta.getText();
+            if (controladorDirectorio.validarRuta(ruta)) {
+                String actual = ListDirectorio.getSelectedValue();
+                controladorDirectorio.renombrarDirectorio(ruta, actual, renombre);
+                JOptionPane.showMessageDialog(this, "Directorio actualizado");
+                List<String> directorio = controladorDirectorio.listarArchivos(ruta);
+                llenarLista(directorio);
+            } else {
+                JOptionPane.showMessageDialog(this, "Inserte la ruta correcta");
+            }
+        }
     }//GEN-LAST:event_menuItemRenombrarActionPerformed
 
     
@@ -320,28 +318,40 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     
     private void btnListarDirectoriosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListarDirectoriosActionPerformed
        
-        limpiarLista();
-        String ruta = txtRuta.getText();
+       String ruta = txtRuta.getText();
 
-        if (ruta.equals("")) {
-            JOptionPane.showMessageDialog(this, "Ingrese una ruta");
-        } else {
-            if (comprobar(ruta)) {
-                List<String> lista = controladorDirectorio.listarDirectorios(ruta);
-                if (lista == null) {
-                    JOptionPane.showMessageDialog(this, "No existe esta ruta");
-                } else {
-                    if (ruta.equals("")) {
-                        JOptionPane.showMessageDialog(this, "Ingrese una ruta");
-                    } else {
-                        //ctrlDirectorio.listarDirectorios(txtRuta.getText());
-                        List<String> listaD = controladorDirectorio.listarDirectorios(ruta);
-                        mostrarLista(listaD);
-                        //listaDirectorios();
-                    }
-                }
+        String subdirectorio = ListDirectorio.getSelectedValue();
+
+        if (subdirectorio != null) {
+            List<String> directorios = controladorDirectorio.buscarNombre(ruta, subdirectorio);
+            
+            //
+            txtRuta.setText(controladorDirectorio.devolverRuta(ruta, subdirectorio));
+            subdirectorio = null;
+            if (directorios.isEmpty()) {
+                JOptionPane.showMessageDialog(this, "El directorio esta vacío");
+
+                limpiarLista();
             } else {
-                JOptionPane.showMessageDialog(this, "No existe ese directorio");
+                llenarLista(directorios);
+            }
+        } else {
+            if (ruta == null) {
+                JOptionPane.showMessageDialog(this, "Obligatorio llenar el campo de ruta");
+            } else {
+                if (controladorDirectorio.validarRuta(ruta)) {
+                    List<String> directorios = controladorDirectorio.listarArchivos(ruta);
+                    if (directorios.isEmpty()) {
+                        JOptionPane.showMessageDialog(this, "El directorio esta vacío");
+                        limpiarLista();
+                    } else {
+                        llenarLista(directorios);
+                    }
+                } else {
+                    JOptionPane.showMessageDialog(this, "Ruta del directorio incorrecta");
+
+                }
+
             }
         }
     }//GEN-LAST:event_btnListarDirectoriosActionPerformed
@@ -350,57 +360,48 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     
     private void btnListarArchivosOcultosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListarArchivosOcultosActionPerformed
     
-        limpiarLista();
         String ruta = txtRuta.getText();
 
-        if (ruta.equals("")) {
-            JOptionPane.showMessageDialog(this, "Ingrese una ruta");
+        if (ruta == null) {
+            JOptionPane.showMessageDialog(this, "Obligatorio llenar el campo de ruta");
         } else {
-            if (comprobar(ruta)) {
-                List<String> lista = controladorDirectorio.listarArchivosOcultos(ruta);
-                if (lista == null) {
-                    JOptionPane.showMessageDialog(this, "No existe esta ruta");
+            if (controladorDirectorio.validarRuta(ruta)) {
+                List<String> directorios = controladorDirectorio.listarArchivosOcultos(ruta);
+                if (directorios.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No contiene archivos ocultos");
+                    limpiarLista();
                 } else {
-                    if (ruta.equals("")) {
-                        JOptionPane.showMessageDialog(this, "Ingrese una ruta");
-                    } else {
-                        List<String> listaDO = controladorDirectorio.listarArchivosOcultos(ruta);
-                        limpiarLista();
-                        mostrarLista(listaDO);
-                    }
+                    llenarLista(directorios);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "No existe ese directorio");
+                JOptionPane.showMessageDialog(this, "Ruta del directorio incorrecta");
+
             }
-        }                                                        
+
+        }          
     }//GEN-LAST:event_btnListarArchivosOcultosActionPerformed
 
     
     
     private void btnListarDirectoriosOcultosActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnListarDirectoriosOcultosActionPerformed
       
-        limpiarLista();
         String ruta = txtRuta.getText();
 
-        if (ruta.equals("")) {
-            JOptionPane.showMessageDialog(this, "Ingrese una ruta");
+        if (ruta == null) {
+            JOptionPane.showMessageDialog(this, "Obligatorio llenar el campo de ruta");
         } else {
-            if (comprobar(ruta)) {
-                List<String> lista = controladorDirectorio.listarDirectoriosOcultos(ruta);
-                if (lista == null) {
-                    JOptionPane.showMessageDialog(this, "No existe esta ruta");
+            if (controladorDirectorio.validarRuta(ruta)) {
+                List<String> directorios = controladorDirectorio.listarDirectoriosOcultos(ruta);
+                if (directorios.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "No contiene directorios ocultos");
+                    limpiarLista();
                 } else {
-                    if (ruta.equals("")) {
-                        JOptionPane.showMessageDialog(this, "Ingrese una ruta");
-                    } else {
-                        List<String> listaDO = controladorDirectorio.listarDirectoriosOcultos(ruta);
-                        limpiarLista();
-                        mostrarLista(listaDO);
-                    }
+                    llenarLista(directorios);
                 }
             } else {
-                JOptionPane.showMessageDialog(this, "No existe ese directorio");
+                JOptionPane.showMessageDialog(this, "Ruta del directorio incorrecta");
             }
+
         }
     }//GEN-LAST:event_btnListarDirectoriosOcultosActionPerformed
 
@@ -408,37 +409,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     
     private void btnMostrarInformacionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMostrarInformacionActionPerformed
         
-        String Directorio = ListDirectorio.getSelectedValue();
-        if (Directorio == null) {
-            JOptionPane.showMessageDialog(this, "Seleccione un archivo");
-            limpiarLista();
-            List<String> lista = controladorDirectorio.listarDirectorios(txtRuta.getText());
-            mostrarLista(lista);
-        } else {
-            txtInformacion.setText(controladorDirectorio.mostrarInformacion(Directorio, txtRuta.getText()));
-        }
+        String nombre = ListDirectorio.getSelectedValue();
+        String ruta = txtRuta.getText();
+
+        String informacion = controladorDirectorio.mostrarInformacion(nombre, ruta);
+        txtInformacion.setText(informacion);
     }//GEN-LAST:event_btnMostrarInformacionActionPerformed
 
-    
-    
-    public boolean comprobar(String ruta) {
-        //String r = txtRuta.getText();
-        File comprobacion = new File(ruta);
-        if (comprobacion.exists()) {
-            return true;
-        } else {
-            //
-            return false;
-        }
-    }
-
-    
-    
-    public void limpiarLista() {
-        DefaultListModel model = new DefaultListModel();
-        model.clear();
-        ListDirectorio.setModel(model);
-    }
     
     public void llenarLista(List<String> directorio) {
         DefaultListModel modelo = new DefaultListModel();
@@ -449,6 +426,13 @@ public class VentanaPrincipal extends javax.swing.JFrame {
         }
         ListDirectorio.setModel(modelo);
     }
+
+    public void limpiarLista() {
+        DefaultListModel modelo = new DefaultListModel();
+        modelo.clear();
+        ListDirectorio.setModel(modelo);
+    }
+
     /**
      * @param args the command line arguments
      */
