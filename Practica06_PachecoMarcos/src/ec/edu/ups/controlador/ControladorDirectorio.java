@@ -90,16 +90,12 @@ public class ControladorDirectorio {
 
     
     // metodo para crear directorio
-     public void crearDirectorio(String nombre, String ruta) throws IOException {
+    public void crearDirectorio(String ruta, String nombre) {
         archivo = new File(ruta + File.separator + nombre);
-        if (archivo.exists() == false && archivo.isDirectory()) {
-            archivo.mkdir();
-        }else{
-            archivo.createNewFile();
-        }
+        archivo.mkdir();
     }
+    
 
-     
      //metodo para eliminar directorio
     public void eliminarDirectorio(String nombre, String ruta){
         archivos = archivo.listFiles();

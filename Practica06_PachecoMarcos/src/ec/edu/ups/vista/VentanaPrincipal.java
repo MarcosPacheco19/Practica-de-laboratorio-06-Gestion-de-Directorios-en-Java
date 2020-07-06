@@ -240,26 +240,21 @@ public class VentanaPrincipal extends javax.swing.JFrame {
     
     
     private void menuItemCrearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_menuItemCrearActionPerformed
-         String crearDirectorio = "";
-        crearDirectorio = JOptionPane.showInputDialog("Ingrese nombre de directorio a crear");
-        //System.out.println(crearDirectorio);
-        String ruta = txtRuta.getText();
+        String nuevo = null;
 
-        if (crearDirectorio != null && ruta != null) {
-            JOptionPane.showMessageDialog(this, "Se ha creado satisfactoriamente el directorio");
-            try {
-                controladorDirectorio.crearDirectorio(crearDirectorio, ruta);
-                limpiarLista();
-                List<String> lista = controladorDirectorio.listarDirectorios(ruta);
-                mostrarLista(lista);
-            } catch (IOException ex) {
-                Logger.getLogger(VentanaPrincipal.class.getName()).log(Level.SEVERE, null, ex);
-            }
-        } else if (crearDirectorio == null) {
-            JOptionPane.showMessageDialog(this, "No se puede crear ningun directorio no se ha ingresado nada");
-        } else if (ruta.equals("")) {
-            JOptionPane.showMessageDialog(this, "Ingrese una ruta para crear un nuevo directorio");
+        nuevo = JOptionPane.showInputDialog("Escriba el nombre del nuevo directorio");
+        if (nuevo == null) {
+            JOptionPane.showMessageDialog(this, "Agregue un nombre al directorio");
+        } else {
+            System.out.println(nuevo);
+            String ruta = txtRuta.getText();
+            if (ruta == null) {
+                JOptionPane.showMessageDialog(this, "Obligatorio llenar el campo de ruta");
+            } else {
+                controladorDirectorio.crearDirectorio(ruta, nuevo);   
+                JOptionPane.showMessageDialog(this, "Directorio creado correctamente");
         }
+      }
     }//GEN-LAST:event_menuItemCrearActionPerformed
 
     
